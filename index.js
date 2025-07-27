@@ -30,13 +30,27 @@ async function getToken() {
 
 app.post('/send-sms', async (req, res) => {
   let { to, message } = req.body;
+  
+  console.log('SMS Request received:', { to, message });
+  console.log('Environment variables:', {
+    clientId: clientId ? 'SET' : 'NOT SET',
+    clientSecret: clientSecret ? 'SET' : 'NOT SET',
+    senderNumber: senderNumber ? 'SET' : 'NOT SET'
+  });
+  
   // Force le format international pour la Guinée
   if (!to.startsWith('+224')) {
     to = '+224' + to.replace(/^0+/, '');
   }
+  
   try {
+    console.log('Getting token...');
     const token = await getToken();
+    console.log('Token received:', token ? 'YES' : 'NO');
+    
     const url = `https://api.orange.com/smsmessaging/v1/outbound/tel%3A%2B${senderNumber}/requests`;
+    console.log('Sending to Orange API:', url);
+    
     const response = await axios.post(
       url,
       {
@@ -54,8 +68,10 @@ app.post('/send-sms', async (req, res) => {
         }
       }
     );
+    console.log('Orange API response:', response.data);
     res.json({ success: true, data: response.data });
   } catch (e) {
+    console.error('Error details:', e.response?.data || e.message);
     res.status(500).json({ success: false, error: e.response?.data || e.message });
   }
 });
