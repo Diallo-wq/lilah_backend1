@@ -14,18 +14,28 @@ const senderNumber = process.env.ORANGE_SENDER_NUMBER || '224627826887';
 const sender = `tel:+${senderNumber}`;
 
 async function getToken() {
-  const res = await axios.post(
-    'https://api.orange.com/oauth/v3/token',
-    'grant_type=client_credentials',
-    {
-      headers: {
-        Authorization: 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Accept': 'application/json'
+  try {
+    console.log('Attempting to get token with clientId:', clientId);
+    const authHeader = 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64');
+    console.log('Auth header (first 20 chars):', authHeader.substring(0, 20) + '...');
+    
+    const res = await axios.post(
+      'https://api.orange.com/oauth/v3/token',
+      'grant_type=client_credentials',
+      {
+        headers: {
+          Authorization: authHeader,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        }
       }
-    }
-  );
-  return res.data.access_token;
+    );
+    console.log('Token response:', res.data);
+    return res.data.access_token;
+  } catch (error) {
+    console.error('Token error:', error.response?.data || error.message);
+    throw error;
+  }
 }
 
 app.post('/send-sms', async (req, res) => {
