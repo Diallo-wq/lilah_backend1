@@ -1,16 +1,16 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Utilisation des variables d'environnement (prêt pour Render)
-const clientId = process.env.ORANGE_CLIENT_ID;
-const clientSecret = process.env.ORANGE_CLIENT_SECRET;
-const senderNumber = process.env.ORANGE_SENDER_NUMBER;
+// Remplace par tes identifiants Orange COMPLETS
+const clientId = process.env.ORANGE_CLIENT_ID || '2e8oEQLmETxzct1JPbNT2KdJZwZHQRCZ';
+const clientSecret = process.env.ORANGE_CLIENT_SECRET || 'v9EvCPr1Nwu4GejbLbDhyvE8siau0Pmb0PHGN3KOW7w4';
+const senderNumber = process.env.ORANGE_SENDER_NUMBER || '224627826887';
 const sender = `tel:+${senderNumber}`;
 
 async function getToken() {
@@ -61,4 +61,4 @@ app.post('/send-sms', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, '0.0.0.0', () => console.log('Orange SMS API running on port', PORT)); 
+app.listen(PORT, '0.0.0.0', () => console.log(`Orange SMS API running on port ${PORT}`)); 
