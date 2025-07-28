@@ -7,10 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Remplace par tes identifiants Orange COMPLETS
-const clientId = process.env.ORANGE_CLIENT_ID || '2e8oEQLmETxzct1JPbNT2KdJZwZHQRCZ';
-const clientSecret = process.env.ORANGE_CLIENT_SECRET || 'v9EvCPr1Nwu4GejbLbDhyvE8siau0Pmb0PHGN3KOW7w4';
-const senderNumber = process.env.ORANGE_SENDER_NUMBER || '224627826887';
+// Variables d'environnement pour les clés Orange
+const clientId = process.env.ORANGE_CLIENT_ID;
+const clientSecret = process.env.ORANGE_CLIENT_SECRET;
+const senderNumber = process.env.ORANGE_SENDER_NUMBER;
 const sender = `tel:+${senderNumber}`;
 
 async function getToken() {
@@ -40,6 +40,15 @@ async function getToken() {
 
 app.post('/send-sms', async (req, res) => {
   let { to, message } = req.body;
+  
+  // Vérification de sécurité
+  if (!clientId || !clientSecret || !senderNumber) {
+    console.error('Missing environment variables');
+    return res.status(500).json({ 
+      success: false, 
+      error: 'Configuration manquante. Vérifiez les variables d\'environnement.' 
+    });
+  }
   
   console.log('SMS Request received:', { to, message });
   console.log('Environment variables:', {
@@ -81,8 +90,20 @@ app.post('/send-sms', async (req, res) => {
     console.log('Orange API response:', response.data);
     res.json({ success: true, data: response.data });
   } catch (e) {
-    console.error('Error details:', e.response?.data || e.message);
-    res.status(500).json({ success: false, error: e.response?.data || e.message });
+    console.error('Full error object:', e);
+    console.error('Error response:', e.response);
+    console.error('Error response data:', e.response?.data);
+    console.error('Error message:', e.message);
+    console.error('Error code:', e.code);
+    
+    const errorDetails = {
+      message: e.message,
+      code: e.code,
+      response: e.response?.data,
+      status: e.response?.status
+    };
+    
+    res.status(500).json({ success: false, error: errorDetails });
   }
 });
 
